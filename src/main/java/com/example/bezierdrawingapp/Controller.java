@@ -1,27 +1,25 @@
 package com.example.bezierdrawingapp;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
+import javafx.scene.Group;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class Controller implements Initializable {
 
@@ -42,41 +40,11 @@ public class Controller implements Initializable {
     private Pane Graph;
 
     @FXML
-    private Pane Graph1;
+    private ChoiceBox<String> methodList;
 
-    @FXML
-    private AnchorPane GraphPane;
+    private final String[] methodsStr = {"Parameters", "Matrix"};
 
-    @FXML
-    private AnchorPane ManagementPane;
-
-    @FXML
-    private Button cancelButton;
-
-    @FXML
-    private Button clearButton;
-
-    @FXML
-    private ColorPicker colorChooser;
-
-    @FXML
-    private Button createButton;
-
-    @FXML
-    private Button drawAutoButton;
-
-    @FXML
-    private Button fillButton;
-
-    @FXML
-    private TextField p0x;
-
-    @FXML
-    private TextField p0y;
-
-    @FXML
-    private Button saveButton;
-
+    //
     @FXML
     private TextField aTf;
 
@@ -86,21 +54,87 @@ public class Controller implements Initializable {
     @FXML
     private TextField stepTf;
 
+    //
+    @FXML
+    private TextField pxAddTf;
+
+    @FXML
+    private TextField pyAddTf;
+
+    //
+    @FXML
+    private TextField pxDeleteTf;
+
+    @FXML
+    private TextField pyDeleteTf;
+
+    //
+    @FXML
+    private ColorPicker polygonColorChooser;
+
+    @FXML
+    private ColorPicker curveColorChooser;
+
+    @FXML
+    private ColorPicker pointsColorChooser;
+
+    //
+    @FXML
+    private TextArea pointListTf;
+
+    //Groups
+
+    @FXML
+    private Group inputStepGroup;
+    @FXML
+    private Group newPointCoordGroup;
+    @FXML
+    private Group deletePointCoordGroup;
+    @FXML
+    private Group colorChooseGroup;
+    @FXML
+    private Group pointListGroup;
+
     private List<Point> pointList;
     private List<Circle> circleList;
     private boolean isDragging = false;
+    private Circle selectedCircle;  // Вибране коло для перетягування
+    double a, b, step;
+    private Color polygonColor;
+    private Color curveColor;
+    private Color pointColor;
 
     /**
      * Функція для ініціалізації початкових значень та викликів функцій під час запуску вікна
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        step=-1;
+        polygonColor = Color.BLACK;
+        curveColor = Color.BLUE;
+        pointColor = Color.BISQUE;
         pointList = new ArrayList<>();
         circleList = new ArrayList<>();
+
+        methodList.getItems().addAll(methodsStr);
+
         drawGraph();
-        addMouseHoverEvent();
-        addMouseClickEvent();
+
+        Graph.setOnMouseMoved(this::handleMouseHover);
+
+        Graph.setOnMouseClicked(this::handleMouseClick);
+        Graph.setOnMousePressed(this::handleMiddleMousePressed);
+        Graph.setOnMouseDragged(this::handleMiddleMouseDragged);
+        Graph.setOnScroll(new ZoomHandler());
+
         autoFill();
+
+        // visible groups
+        inputStepGroup.setVisible(false);
+        newPointCoordGroup.setVisible(false);
+        pointListGroup.setVisible(false);
+        colorChooseGroup.setVisible(false);
+        deletePointCoordGroup.setVisible(false);
     }
 
     private void drawBezierCurveByParameters() {
@@ -118,28 +152,10 @@ public class Controller implements Initializable {
         stepTf.setText(0.001 +"");
     }
 
-    @FXML
-    void onAutoDrawButtonClick(ActionEvent event) {
 
-    }
-
+    // Button panel buttons
     @FXML
     void onCancelButtonClick(ActionEvent event) {
-
-    }
-
-    @FXML
-    void onClearButtonClick(ActionEvent event) {
-
-    }
-
-    @FXML
-    void onCreateButtonClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void onFillButtonClick(ActionEvent event) {
 
     }
 
@@ -148,67 +164,306 @@ public class Controller implements Initializable {
 
     }
 
-    /**
-     * Функція обробки події наведення курсору мишки на панель
-     */
-    private void addMouseHoverEvent() {
-        Graph.setOnMouseMoved((MouseEvent event) -> {
-            CoordinateLabel.setText("");
-            double x = event.getX();
-            double y = event.getY();
-            Point point = new Point(x, y);
-            point.calculationCartesianCoord(Graph, LINES_FREQUENCY);
-            CoordinateLabel.setText("x: " + point.getxCart() + " , y: " + point.getyCart());
-        });
+    @FXML
+    void onClearButtonClick(ActionEvent event) {
+        Graph.getChildren().clear();
+        pointList.clear();
+        circleList.clear();
+        drawGraph();
     }
 
-    private void handleCircleDragged(Circle circle, MouseEvent event) {
-        double newMouseX = event.getX();
-        double newMouseY = event.getY();
-
-        // Оновлюємо координати точки та кола
-        int index = circleList.indexOf(circle);
-        if (index != -1 && index < pointList.size()) {
-            pointList.get(index).setxGraph(newMouseX);
-            pointList.get(index).setyGraph(newMouseY);
-            circle.setCenterX(newMouseX);
-            circle.setCenterY(newMouseY);
+    // Main Panel buttons
+    @FXML
+    void onChooseMethodButtonClicked(ActionEvent event) {
+        if (Objects.equals(methodList.getValue(), "Parameters")) {
+            inputStepGroup.setVisible(true);
+            newPointCoordGroup.setVisible(true);
+            pointListGroup.setVisible(true);
+            colorChooseGroup.setVisible(true);
+            deletePointCoordGroup.setVisible(true);
         }
     }
 
+    @FXML
+    void onInputButtonClick(ActionEvent event) {
+        if (isStepFieldsCorrectFilled()) {
+            a = Double.parseDouble(aTf.getText());
+            b = Double.parseDouble(bTf.getText());
+            step = Double.parseDouble(stepTf.getText());
+            updateGraph();
+        }
+    }
+
+    public boolean isStepFieldsCorrectFilled() {
+        if (aTf.getText().isEmpty() || bTf.getText().isEmpty() || stepTf.getText().isEmpty()) {
+            return false;
+        }
+        try {
+            double aTemp = Double.parseDouble(aTf.getText());
+            double bTemp = Double.parseDouble(bTf.getText());
+            double stepTemp = Double.parseDouble(stepTf.getText());
+
+            if (aTemp < 0 || aTemp >= 1 || bTemp <= 0 || bTemp > 1 || stepTemp <= 0 || aTemp-bTemp>=0) {
+                return false;
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            // Input Label
+            return false;
+        }
+    }
+
+    public boolean isStepValuesCorrect() {
+        return !(step <= 0) && !(a < 0) && !(a >= 1) && !(b <= 0) && !(b > 1);
+    }
+
+
+    @FXML
+    void onAddButtonClick(ActionEvent event) {
+        if (!isStepValuesCorrect()) {
+            return;
+        }
+        double x = Double.parseDouble(pxAddTf.getText());
+        double y = Double.parseDouble(pyAddTf.getText());
+
+        Point point = new Point(x, y, 1);
+        point.calculationGraphicsCoord(Graph, LINES_FREQUENCY);
+
+        /*List<Point> tempList = pointList;
+        List<Circle> tempCircList = circleList;*/
+
+        Circle pointCircle = new Circle(point.getxGraph(), point.getyGraph(), 6, pointColor);
+        /*tempList.add(point);
+        tempCircList.add(pointCircle);*/
+
+        pointList.add(point);
+        circleList.add(pointCircle);
+
+        updateGraph();
+    }
+
     /**
-     * Функція обробки події натиску на кнопку миші
+     * Масштабування графіка із заданими у полях значеннями
      */
-    private void addMouseClickEvent() {
-        Graph.setOnMouseClicked((MouseEvent event) -> {
-            if (!isDragging) {
-                double x = event.getX();
-                double y = event.getY();
-
-                Point point = new Point(x, y);
-                point.calculationCartesianCoord(Graph, LINES_FREQUENCY);
-
-                pointList.add(point);
-                Circle pointCircle = new Circle(point.getxGraph(), point.getyGraph(), 3, Color.BISQUE);
-                //pointCircle.setOnMouseClicked(e -> handleCircleClick(circle));
-                pointCircle.setOnMouseDragged(e -> handleCircleDragged(pointCircle, e));
-                circleList.add(pointCircle);
-
-                Graph.getChildren().clear();
-                drawGraph();
-                drawBezierCurveByParameters();
+    public void scalingToUserValue(List<Point> points, List<Circle> circles) {
+        int[] scaleFrequency = new int[points.size()];
+        for (int i = 0; i < points.size(); i++) {
+            scaleFrequency[i] = LINES_FREQUENCY;
+            points.get(i).calculationGraphicsCoord(Graph, LINES_FREQUENCY);
+            if (points.get(i).getxGraph() > Graph.getPrefWidth()) {
+                int temp;
+                temp = (int) ((Graph.getPrefWidth() / points.get(i).getxCart()));
+                if (temp < scaleFrequency[i] && temp >= 6) {
+                    scaleFrequency[i] = temp;
+                }
+                System.out.println("Scale: " + scaleFrequency);
             }
-        });
-
-        Graph.setOnMouseReleased(event -> {
-            // Скидаємо флаг і перебудовуємо графік після завершення перетягування
-            if (isDragging) {
-                Graph.getChildren().clear();
-                drawGraph();
-                drawBezierCurveByParameters();
-                isDragging = false;
+            if (points.get(i).getxGraph() < 0) {
+                int temp;
+                temp = (int) ((Graph.getPrefWidth() / (-points.get(i).getxCart())));
+                if (temp < scaleFrequency[i] && temp >= 6) {
+                    scaleFrequency[i] = temp;
+                }
+                System.out.println("Scale: " + scaleFrequency);
             }
-        });
+            if (points.get(i).getyGraph() > Graph.getPrefHeight()) {
+                int temp;
+                temp = (int) ((Graph.getPrefHeight() / -points.get(i).getyCart()));
+                if (temp < scaleFrequency[i] && temp >= 6) {
+                    scaleFrequency[i] = temp;
+                }
+                System.out.println("Scale: " + scaleFrequency);
+            }
+            if (points.get(i).getyGraph() < 0) {
+                int temp;
+                temp = (int) ((Graph.getPrefHeight() / points.get(i).getyCart()));
+                if (temp < scaleFrequency[i] && temp >= 6) {
+                    scaleFrequency[i] = temp;
+                }
+                System.out.println("Scale: " + scaleFrequency);
+            }
+        }
+
+        int minValue = scaleFrequency[0];
+
+        for (int i = 1; i < scaleFrequency.length; i++) {
+            if (scaleFrequency[i] < minValue) {
+                minValue = scaleFrequency[i];
+            }
+        }
+        LINES_FREQUENCY = minValue;
+
+        for (int i = 0; i < points.size(); i++) {
+            points.get(i).calculationGraphicsCoord(Graph, LINES_FREQUENCY);
+            circles.get(i).setCenterX(points.get(i).getxGraph());
+            circles.get(i).setCenterY(points.get(i).getyGraph());
+
+        }
+    }
+
+    @FXML
+    void onDeleteButtonClick(ActionEvent event) {
+        if (!isStepValuesCorrect()) {
+            return;
+        }
+        double x = Double.parseDouble(pxDeleteTf.getText());
+        double y = Double.parseDouble(pyDeleteTf.getText());
+
+        Point point = new Point(x, y, 1);
+        calculateCartCoordinateOfTheList(pointList);
+        for (int i = 0; i <pointList.size(); i++) {
+            if (pointList.get(i).equals(point)) {
+                pointList.remove(i);
+                circleList.remove(i);
+            }
+        }
+        updateGraph();
+    }
+
+    @FXML
+    void onPolygonColorButtonClick(ActionEvent event) {
+        polygonColor = polygonColorChooser.getValue();
+        updateGraph();
+    }
+
+    @FXML
+    void onCurveColorButtonClick(ActionEvent event) {
+        curveColor = curveColorChooser.getValue();
+        updateGraph();
+    }
+
+    @FXML
+    void onPointColorButtonClick(ActionEvent event) {
+        pointColor = pointsColorChooser.getValue();
+        for (Circle circle:circleList) {
+            circle.setFill(pointColor);
+        }
+        updateGraph();
+    }
+    private class ZoomHandler implements EventHandler<ScrollEvent> {
+        private final double MAX_ZOOM = 300;
+        private final double MIN_ZOOM = 6;
+
+        //public double tempLinesFreq = LINES_FREQUENCY;
+        @Override
+        public void handle(ScrollEvent event) {
+            double tempLinesFreq = LINES_FREQUENCY;
+            calculateCartCoordinateOfTheList(pointList);
+            if (event.getDeltaY() == 0) {
+                return;
+            } else if (event.getDeltaY() > 0 && tempLinesFreq * 1.1 < MAX_ZOOM) {
+                if (beyondLimits()) {
+                    return;
+                }
+                tempLinesFreq *= 1.1;
+                System.out.println("Top: " + LINES_FREQUENCY);
+            } else if (event.getDeltaY() < 0 && tempLinesFreq * 0.9 > MIN_ZOOM) {
+                tempLinesFreq *= 0.9;
+                System.out.println("Bottom: " + LINES_FREQUENCY);
+            }
+            LINES_FREQUENCY = (int) Math.round(tempLinesFreq);
+            calculateGraphCoordinateOfTheList(pointList, circleList);
+            System.out.println("Origin: " + LINES_FREQUENCY);
+            updateGraph();
+        }
+    }
+
+    public void calculateGraphCoordinateOfTheList(List<Point> pointList, List<Circle> circleList){
+        for (int i = 0; i<pointList.size(); i++) {
+            pointList.get(i).calculationGraphicsCoord(Graph, LINES_FREQUENCY);
+            circleList.get(i).setCenterX(pointList.get(i).getxGraph());
+            circleList.get(i).setCenterY(pointList.get(i).getyGraph());
+        }
+    }
+
+    public void calculateCartCoordinateOfTheList(List<Point> pointList){
+        for (Point point: pointList) {
+            point.calculationCartesianCoord(Graph, LINES_FREQUENCY);
+        }
+    }
+
+    public boolean beyondLimits() {
+        int temp = 0;
+        for (Point entry: pointList) {
+            if (entry.getxGraph() > Graph.getPrefWidth() - 30 || entry.getxGraph() < 30 || entry.getyGraph() >
+                    Graph.getPrefHeight() - 30 || entry.getyGraph() < 30) {
+                temp++;
+            }
+        }
+        return temp > 0;
+    }
+
+    /**
+     * Функція обробки події наведення курсору мишки на панель
+     */
+    private void handleMouseHover(MouseEvent event) {
+        double x = event.getX();
+        double y = event.getY();
+        Point point = new Point((int) x, (int) y);
+        point.calculationCartesianCoord(Graph, LINES_FREQUENCY);
+        CoordinateLabel.setText("x: " + point.getxCart() + " , y: " + point.getyCart());
+    }
+
+    private void handleMiddleMousePressed(MouseEvent event) {
+        if (event.getButton() == MouseButton.MIDDLE) {
+            for (Circle circle : circleList) {
+                if (circle.getBoundsInParent().contains(event.getX(), event.getY())) {
+                    selectedCircle = circle;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void handleMiddleMouseDragged(MouseEvent event) {
+        if (selectedCircle != null && event.getButton() == MouseButton.MIDDLE) {
+            double newMouseX = event.getX();
+            double newMouseY = event.getY();
+
+            int index = circleList.indexOf(selectedCircle);
+            if (index != -1 && index < pointList.size()) {
+                pointList.get(index).setxGraph(newMouseX);
+                pointList.get(index).setyGraph(newMouseY);
+                selectedCircle.setCenterX(newMouseX);
+                selectedCircle.setCenterY(newMouseY);
+            }
+
+            // Викликати оновлення графіку та інших елементів, якщо потрібно
+            updateGraph();
+        }
+    }
+
+    private void handleMouseClick(MouseEvent event) {
+        if (!isStepValuesCorrect()) {
+            return;
+        }
+        if (!isDragging && event.getButton() == MouseButton.PRIMARY) {
+            double x = event.getX();
+            double y = event.getY();
+
+            Point point = new Point((int) x, (int) y);
+            pointList.add(point);
+
+            Circle pointCircle = new Circle(x, y, 6, pointColor);
+            circleList.add(pointCircle);
+
+            //Graph.getChildren().add(pointCircle);
+
+            updateGraph();
+            return;
+        }
+
+        if (!isDragging && event.getButton() == MouseButton.SECONDARY) {
+            for (int i = 0; i < circleList.size(); i++) {
+                Circle circle = circleList.get(i);
+                if (circle.getBoundsInParent().contains(event.getX(), event.getY())) {
+                    circleList.remove(i);
+                    pointList.remove(i);
+                    updateGraph();
+                    return;
+                }
+            }
+        }
     }
 
     /**
@@ -289,12 +544,22 @@ public class Controller implements Initializable {
         }
     }
 
+    public void updateGraph() {
+        Graph.getChildren().clear();
+        drawGraph();
+        drawBezierCurveByParameters();
+    }
+
     private void drawBezierCurve(GraphicsContext gcBezier, GraphicsContext gcPolygon) {
+        if (!isStepValuesCorrect()) {
+            return;
+        }
 
         double[] controlPointsX = pointList.stream().mapToDouble(Point::getxGraph).toArray();
         double[] controlPointsY = pointList.stream().mapToDouble(Point::getyGraph).toArray();
 
         gcPolygon.setLineWidth(2.0);
+        gcPolygon.setStroke(polygonColor);
         gcPolygon.beginPath();
         for (int i = 0; i<pointList.size(); i++) {
             Graph.getChildren().add(circleList.get(i));
@@ -308,10 +573,10 @@ public class Controller implements Initializable {
 
         int n = controlPointsX.length - 1;
         gcBezier.setLineWidth(2.0);
-        gcBezier.setStroke(Color.BLUE);
+        gcBezier.setStroke(curveColor);
         gcBezier.beginPath();
 
-        for (double i = Double.parseDouble(aTf.getText()); i <= Double.parseDouble(bTf.getText());) {
+        for (double i = a; i <= b;) {
             double t = i;
             double x = calculateBezierCoordinate(t, controlPointsX, n);
             double y = calculateBezierCoordinate(t, controlPointsY, n);
@@ -322,7 +587,7 @@ public class Controller implements Initializable {
                 gcBezier.lineTo(x, y);
             }
 
-            i+= Double.parseDouble(stepTf.getText());
+            i+= step;
         }
 
         gcBezier.stroke();

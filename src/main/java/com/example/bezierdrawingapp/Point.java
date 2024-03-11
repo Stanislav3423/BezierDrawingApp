@@ -70,6 +70,15 @@ public class Point {
         yGraph = -yCart * linesFrequency / 2 + graph.getPrefHeight() / 2;
     }
 
+    public void calculationNewGraphicsCoord(Pane graph, int linesFrequency) {
+        xGraph = xCart * linesFrequency / 2 + graph.getPrefWidth() / 2;
+        yGraph = -yCart * linesFrequency / 2 + graph.getPrefHeight() / 2;
+    }
+
+    public boolean equals(Point point) {
+        return this.xCart == point.xCart && this.yCart == point.yCart;
+    }
+
     @Override
     public String toString() {
         return "Point{x=" + xCart + ", y=" + yCart + '}';

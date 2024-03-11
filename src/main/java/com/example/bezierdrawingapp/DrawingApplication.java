@@ -14,6 +14,7 @@ public class DrawingApplication extends Application {
         Scene scene = new Scene(fxmlLoader.load(), 1100, 650);
         stage.setTitle("Drawing Bezier Curve");
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 
