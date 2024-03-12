@@ -9,7 +9,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -33,8 +32,26 @@ public class Controller implements Initializable {
      */
     private final double MIN_LINES_STROKE = 0.2;
 
+    private final int MAX_MATRIX_POINTS_NUMBER = 30;
+
+    private final int MAX_PARAMETERS_POINTS_NUMBER = 100;
+
+    private int MAX_POINTS = 0;
+
     @FXML
     private Label CoordinateLabel;
+
+    @FXML
+    private Label maxPointsNumLabel;
+
+    @FXML
+    private Label addLabelWarning;
+
+    @FXML
+    private Label deleteLabelWarning;
+
+    @FXML
+    private Label tLabelWarning;
 
     @FXML
     private Pane Graph;
@@ -85,6 +102,12 @@ public class Controller implements Initializable {
     @FXML
     private TextArea diagonalPointListTf;
 
+    @FXML
+    private TextField diagonalSumTf1;
+
+    @FXML
+    private TextField diagonalSumTf2;
+
     //Groups
 
     @FXML
@@ -99,6 +122,8 @@ public class Controller implements Initializable {
     private Group pointListGroup;
     @FXML
     private Group diagonalPointListGroup;
+    @FXML
+    private Group diagonalSumGroup;
 
     private List<Point> pointList;
     private List<Circle> circleList;
@@ -121,6 +146,10 @@ public class Controller implements Initializable {
         pointList = new ArrayList<>();
         circleList = new ArrayList<>();
 
+        addLabelWarning.setText("");
+        deleteLabelWarning.setText("");
+        tLabelWarning.setText("");
+
         methodList.getItems().addAll(methodsStr);
 
         drawGraph();
@@ -141,6 +170,7 @@ public class Controller implements Initializable {
         colorChooseGroup.setVisible(false);
         deletePointCoordGroup.setVisible(false);
         diagonalPointListGroup.setVisible(false);
+        diagonalSumGroup.setVisible(false);
     }
 
     private void drawBezierCurveByParameters() {
@@ -149,7 +179,16 @@ public class Controller implements Initializable {
         Graph.getChildren().addAll(canvasBezier, canvasPolygon);
         GraphicsContext gcBezier = canvasBezier.getGraphicsContext2D();
         GraphicsContext gcPolygon = canvasPolygon.getGraphicsContext2D();
-        drawBezierCurve(gcBezier, gcPolygon);
+        drawBezierCurveParameters(gcBezier, gcPolygon);
+    }
+
+    private void drawBezierCurveByMatrix() {
+        Canvas canvasBezier = new Canvas(Graph.getPrefWidth(), Graph.getPrefHeight());
+        Canvas canvasPolygon = new Canvas(Graph.getPrefWidth(), Graph.getPrefHeight());
+        Graph.getChildren().addAll(canvasBezier, canvasPolygon);
+        GraphicsContext gcBezier = canvasBezier.getGraphicsContext2D();
+        GraphicsContext gcPolygon = canvasPolygon.getGraphicsContext2D();
+        drawBezierCurveMatrix(gcBezier, gcPolygon);
     }
 
     public void autoFill(){
@@ -161,16 +200,6 @@ public class Controller implements Initializable {
 
     // Button panel buttons
     @FXML
-    void onCancelButtonClick(ActionEvent event) {
-
-    }
-
-    @FXML
-    void onSaveButtonClick(ActionEvent event) {
-
-    }
-
-    @FXML
     void onClearButtonClick(ActionEvent event) {
         clearPane();
     }
@@ -179,34 +208,66 @@ public class Controller implements Initializable {
         Graph.getChildren().clear();
         pointList.clear();
         circleList.clear();
+        nullStepValue();
         clearFields();
         drawGraph();
     }
 
     public void clearFields() {
+        aTf.clear();
+        bTf.clear();
+        stepTf.clear();
         pxAddTf.clear();
         pyAddTf.clear();
         pyDeleteTf.clear();
         pxDeleteTf.clear();
         pointListTf.clear();
         diagonalPointListTf.clear();
+        diagonalSumTf1.clear();
+        diagonalSumTf2.clear();
+        addLabelWarning.setText("");
+        deleteLabelWarning.setText("");
+        tLabelWarning.setText("");
     }
 
     // Main Panel buttons
     @FXML
     void onChooseMethodButtonClicked(ActionEvent event) {
         if (Objects.equals(methodList.getValue(), "Parameters")) {
+            clearPane();
+            //
+            autoFill();
+            //
+            maxPointsNumLabel.setText("Max num of points " + MAX_PARAMETERS_POINTS_NUMBER);
+            MAX_POINTS = MAX_PARAMETERS_POINTS_NUMBER;
+            diagonalSumGroup.setVisible(false);
+            diagonalPointListGroup.setVisible(false);
             inputStepGroup.setVisible(true);
             newPointCoordGroup.setVisible(true);
             pointListGroup.setVisible(true);
             colorChooseGroup.setVisible(true);
             deletePointCoordGroup.setVisible(true);
+        } else if (Objects.equals(methodList.getValue(), "Matrix")) {
+            clearPane();
+            //
+            autoFill();
+            //
+            maxPointsNumLabel.setText("Max num of points " + MAX_MATRIX_POINTS_NUMBER);
+            MAX_POINTS = MAX_MATRIX_POINTS_NUMBER;
+            diagonalSumGroup.setVisible(true);
+            inputStepGroup.setVisible(true);
+            newPointCoordGroup.setVisible(true);
+            pointListGroup.setVisible(true);
+            colorChooseGroup.setVisible(true);
+            deletePointCoordGroup.setVisible(true);
+            diagonalPointListGroup.setVisible(true);
         }
     }
 
     @FXML
     void onInputButtonClick(ActionEvent event) {
         if (isStepFieldsCorrectFilled()) {
+            tLabelWarning.setText("");
             a = Double.parseDouble(aTf.getText());
             b = Double.parseDouble(bTf.getText());
             step = Double.parseDouble(stepTf.getText());
@@ -216,6 +277,7 @@ public class Controller implements Initializable {
 
     public boolean isStepFieldsCorrectFilled() {
         if (aTf.getText().isEmpty() || bTf.getText().isEmpty() || stepTf.getText().isEmpty()) {
+            tLabelWarning.setText("*Field empty");
             return false;
         }
         try {
@@ -224,11 +286,12 @@ public class Controller implements Initializable {
             double stepTemp = Double.parseDouble(stepTf.getText());
 
             if (aTemp < 0 || aTemp >= 1 || bTemp <= 0 || bTemp > 1 || stepTemp <= 0 || aTemp-bTemp>=0) {
+                tLabelWarning.setText("*Input correct values");
                 return false;
             }
             return true;
         } catch (NumberFormatException e) {
-            // Input Label
+            tLabelWarning.setText("*Incorrect input");
             return false;
         }
     }
@@ -237,13 +300,27 @@ public class Controller implements Initializable {
         return !(step <= 0) && !(a < 0) && !(a >= 1) && !(b <= 0) && !(b > 1);
     }
 
+    public void nullStepValue() {
+        step=-1;
+        a=-1;
+        b=-1;
+    }
+
 
     @FXML
     void onAddButtonClick(ActionEvent event) {
-        if (!isStepValuesCorrect() || !isAddCoordinatesFieldsCorrectFilled()) {
+        if (!isStepValuesCorrect()) {
+            addLabelWarning.setText("*Input step and interval");
             return;
         }
-
+        if (!isAddCoordinatesFieldsCorrectFilled()) {
+            return;
+        }
+        if (pointList.size()>=MAX_POINTS) {
+            showAlert("Warning", "There are maximum number of points " + MAX_POINTS +"/"+MAX_POINTS);
+            return;
+        }
+        addLabelWarning.setText("");
         double x = Double.parseDouble(pxAddTf.getText());
         double y = Double.parseDouble(pyAddTf.getText());
 
@@ -264,6 +341,7 @@ public class Controller implements Initializable {
 
     public boolean isAddCoordinatesFieldsCorrectFilled() {
         if (pxAddTf.getText().isEmpty() || pyAddTf.getText().isEmpty()) {
+            addLabelWarning.setText("*Field empty");
             return false;
         }
         try {
@@ -271,11 +349,12 @@ public class Controller implements Initializable {
             double yTemp = Double.parseDouble(pyAddTf.getText());
 
             if (xTemp < -100 || xTemp > 100 || yTemp < -100 || yTemp > 100) {
+                addLabelWarning.setText("*Values must be between -100 and 100");
                 return false;
             }
             return true;
         } catch (NumberFormatException e) {
-            // Input Label
+            addLabelWarning.setText("*Incorrect input");
             return false;
         }
     }
@@ -340,9 +419,14 @@ public class Controller implements Initializable {
 
     @FXML
     void onDeleteButtonClick(ActionEvent event) {
-        if (!isStepValuesCorrect() || !isDeleteCoordinatesFieldsCorrectFilled()) {
+        if (!isStepValuesCorrect()) {
+            deleteLabelWarning.setText("*Input step and interval");
             return;
         }
+        if (!isDeleteCoordinatesFieldsCorrectFilled()) {
+            return;
+        }
+        deleteLabelWarning.setText("");
         double x = Double.parseDouble(pxDeleteTf.getText());
         double y = Double.parseDouble(pyDeleteTf.getText());
 
@@ -361,14 +445,22 @@ public class Controller implements Initializable {
 
     public boolean isDeleteCoordinatesFieldsCorrectFilled() {
         if (pxDeleteTf.getText().isEmpty() || pyDeleteTf.getText().isEmpty()) {
+            deleteLabelWarning.setText("*Field empty");
             return false;
         }
         try {
             double xTemp = Double.parseDouble(pxDeleteTf.getText());
             double yTemp = Double.parseDouble(pyDeleteTf.getText());
-            return true;
+            Point point = new Point(xTemp, yTemp, 1);
+            for (int i = 0; i <pointList.size(); i++) {
+                if (pointList.get(i).equals(point)) {
+                    return true;
+                }
+            }
+            deleteLabelWarning.setText("*The point does not exist");
+            return false;
         } catch (NumberFormatException e) {
-            // Input Label
+            addLabelWarning.setText("*Incorrect input");
             return false;
         }
     }
@@ -472,6 +564,10 @@ public class Controller implements Initializable {
         if (selectedCircle != null && event.getButton() == MouseButton.MIDDLE) {
             double newMouseX = event.getX();
             double newMouseY = event.getY();
+            Point point = new Point(newMouseX, newMouseY);
+            if (pointBeyondLimit(point)) {
+                return;
+            }
 
             int index = circleList.indexOf(selectedCircle);
             if (index != -1 && index < pointList.size()) {
@@ -486,11 +582,24 @@ public class Controller implements Initializable {
         }
     }
 
+    public boolean pointBeyondLimit(Point point) {
+        if (point.getxGraph()>Graph.getPrefWidth() || point.getxGraph()<0
+                || point.getyGraph()>Graph.getPrefHeight() || point.getyGraph()<0) {
+            return true;
+        }
+        return false;
+    }
+
     private void handleMouseClick(MouseEvent event) {
         if (!isStepValuesCorrect()) {
+            showAlert("Warning", "Input step and interval");
             return;
         }
         if (!isDragging && event.getButton() == MouseButton.PRIMARY) {
+            if (pointList.size()>=MAX_POINTS) {
+                showAlert("Warning", "There are maximum number of points " + MAX_POINTS +"/"+MAX_POINTS);
+                return;
+            }
             double x = event.getX();
             double y = event.getY();
 
@@ -600,7 +709,11 @@ public class Controller implements Initializable {
     public void updateGraph() {
         Graph.getChildren().clear();
         drawGraph();
-        drawBezierCurveByParameters();
+        if (Objects.equals(methodList.getValue(), "Parameters")) {
+            drawBezierCurveByParameters();
+        } else if (Objects.equals(methodList.getValue(), "Matrix")) {
+            drawBezierCurveByMatrix();
+        }
         fillLabelListOfPoint();
     }
 
@@ -613,7 +726,7 @@ public class Controller implements Initializable {
         pointListTf.setText(str);
     }
 
-    private void drawBezierCurve(GraphicsContext gcBezier, GraphicsContext gcPolygon) {
+    private void drawBezierCurveParameters(GraphicsContext gcBezier, GraphicsContext gcPolygon) {
         if (!isStepValuesCorrect()) {
             return;
         }
@@ -641,8 +754,8 @@ public class Controller implements Initializable {
 
         for (double i = a; i <= b;) {
             double t = i;
-            double x = calculateBezierCoordinate(t, controlPointsX, n);
-            double y = calculateBezierCoordinate(t, controlPointsY, n);
+            double x = calculateBezierParametersCoordinate(t, controlPointsX, n);
+            double y = calculateBezierParametersCoordinate(t, controlPointsY, n);
 
             if (i == 0) {
                 gcBezier.moveTo(x, y);
@@ -656,7 +769,8 @@ public class Controller implements Initializable {
         gcBezier.stroke();
     }
 
-    private double calculateBezierCoordinate(double t, double[] controlPoints, int n) {
+    // Parameters Method
+    private double calculateBezierParametersCoordinate(double t, double[] controlPoints, int n) {
         double result = 0;
         for (int i = 0; i <= n; i++) {
             result += controlPoints[i] * binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
@@ -664,7 +778,7 @@ public class Controller implements Initializable {
         return result;
     }
 
-    private double binomialCoefficient(int n, int i) {
+    private static double binomialCoefficient(int n, int i) {
         if (i == 0 || i == n) {
             return 1;
         } else {
@@ -672,7 +786,7 @@ public class Controller implements Initializable {
         }
     }
 
-    public double factorial(double f) {
+    public static double factorial(double f) {
         double result = 1;
         for (int i = 1; i <= f; i++) {
             result = result * i;
@@ -680,4 +794,141 @@ public class Controller implements Initializable {
         return result;
     }
 
+    // Matrix Method
+
+    private void drawBezierCurveMatrix(GraphicsContext gcBezier, GraphicsContext gcPolygon) {
+        if (!isStepValuesCorrect()) {
+            return;
+        }
+
+        double[] controlPointsX = pointList.stream().mapToDouble(Point::getxGraph).toArray();
+        double[] controlPointsY = pointList.stream().mapToDouble(Point::getyGraph).toArray();
+
+        gcPolygon.setLineWidth(2.0);
+        gcPolygon.setStroke(polygonColor);
+        gcPolygon.beginPath();
+        for (int i = 0; i<pointList.size(); i++) {
+            Graph.getChildren().add(circleList.get(i));
+            if (i == 0) {
+                gcPolygon.moveTo(controlPointsX[i], controlPointsY[i]);
+            } else {
+                gcPolygon.lineTo(controlPointsX[i], controlPointsY[i]);
+            }
+        }
+        gcPolygon.stroke();
+
+        int n = controlPointsX.length - 1;
+        gcBezier.setLineWidth(2.0);
+        gcBezier.setStroke(curveColor);
+        gcBezier.beginPath();
+
+        double[][] coefficientsMatrix = computeMatrix(n);
+        System.out.println("Coefficients Matrix:");
+        printMatrix(coefficientsMatrix);
+        setMatrixLabel(coefficientsMatrix);
+
+        for (double i = a; i <= b;) {
+            double t = i;
+            double x = calculateBezierMatrixCoordinate(t, coefficientsMatrix, controlPointsX, n);
+            double y = calculateBezierMatrixCoordinate(t, coefficientsMatrix, controlPointsY, n);
+
+            if (i == 0) {
+                gcBezier.moveTo(x, y);
+            } else {
+                gcBezier.lineTo(x, y);
+            }
+
+            i+= step;
+        }
+
+        gcBezier.stroke();
+    }
+
+    private double calculateBezierMatrixCoordinate(double t, double[][] coefficientsMatrix, double[] controlPoints, int n) {
+        double[] tMatrix = computeTMatrix(t, n);
+
+        double[] intermediateResult = new double[n + 1];
+        for (int i = 0; i < n+1; i++) {
+            for (int j = 0; j < n+1; j++) {
+                intermediateResult[i] += coefficientsMatrix[i][j] * tMatrix[j];
+            }
+        }
+
+        double result = 0;
+        for (int i = 0; i <= n; i++) {
+            result += intermediateResult[i] * controlPoints[i];
+        }
+
+        return result;
+    }
+
+    public static double[][] computeMatrix(int n) {
+        double[][] coefficients = new double[n + 1][n + 1];
+        Arrays.stream(coefficients).forEach(row -> Arrays.fill(row, 0));
+
+        for (int i = 0; i <= n; i++) {
+            for (int j = 0; j <= n-i; j++) {
+                coefficients[i][j] = binomialCoefficient(n, j) * binomialCoefficient(n-j, n-i-j) * Math.pow(-1, n-i-j);
+            }
+        }
+
+        return coefficients;
+    }
+
+    public static double[] computeTMatrix(double t, int n) {
+        double[] tMatrix = new double[n + 1];
+        for (int i = 0; i < tMatrix.length; i++) {
+            tMatrix[i] = Math.pow(t, n-i);
+        }
+
+        return tMatrix;
+    }
+
+    public static void printMatrix(double[][] matrix) {
+        for (double[] row : matrix) {
+            for (double element : row) {
+                System.out.print(element + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    public void setMatrixLabel(double[][] matrix) {
+        String str = "";
+        double diagonal1 = 0;
+        String diagonal1SumStr = "";
+        double diagonal2 = 0;
+        String diagonal2SumStr = "";
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j<matrix.length-i; j++) {
+                str+= matrix[i][j]+ "  ";
+
+                if (i==j) {
+                    diagonal1SumStr += matrix[i][j]+" + ";
+                    diagonal1+=matrix[i][j];
+                }
+                if (j == matrix.length-i-1) {
+                    diagonal2SumStr += matrix[i][j]+" + ";
+                    diagonal2+=matrix[i][j];
+                }
+            }
+            str+= "\n";
+        }
+        diagonal1SumStr += "= " + diagonal1;
+        diagonalSumTf1.setText(diagonal1+"");
+        diagonal2SumStr += "= " + diagonal2;
+        diagonalSumTf2.setText(diagonal2+"");
+        diagonalPointListTf.setText(str);
+    }
+
+    /**
+     * Відображення вікна оповіщення
+     */
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
 }
