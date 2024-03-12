@@ -125,7 +125,7 @@
                   <TextField fx:id="bTf" layoutX="145.0" layoutY="15.0" prefHeight="25.0" prefWidth="47.0" />
                   <Label layoutX="43.0" prefHeight="55.0" prefWidth="24.0" text="a:" textFill="WHITE">
                      <font>
-                        <Font size ="14.0" />
+                        <Font size="14.0" />
                      </font>
                   </Label>
                   <Label layoutX="121.0" prefHeight="55.0" prefWidth="24.0" text="b:" textFill="WHITE">
@@ -185,6 +185,16 @@
                      </font>
                   </Label>
                   <TextArea fx:id="pointListTf" layoutX="-12.0" layoutY="31.0" prefHeight="89.0" prefWidth="187.0" />
+               </children>
+            </Group>
+            <Group fx:id="diagonalPointListGroup" layoutX="240.0" layoutY="396.0">
+               <children>
+                  <Label layoutX="-12.0" prefHeight="27.0" prefWidth="174.0" text="List of diagonal elements:" textFill="WHITE">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextArea fx:id="diagonalPointListTf" layoutX="-12.0" layoutY="31.0" prefHeight="89.0" prefWidth="187.0" />
                </children>
             </Group>
     </children></AnchorPane>

@@ -82,6 +82,9 @@ public class Controller implements Initializable {
     @FXML
     private TextArea pointListTf;
 
+    @FXML
+    private TextArea diagonalPointListTf;
+
     //Groups
 
     @FXML
@@ -94,6 +97,8 @@ public class Controller implements Initializable {
     private Group colorChooseGroup;
     @FXML
     private Group pointListGroup;
+    @FXML
+    private Group diagonalPointListGroup;
 
     private List<Point> pointList;
     private List<Circle> circleList;
@@ -135,6 +140,7 @@ public class Controller implements Initializable {
         pointListGroup.setVisible(false);
         colorChooseGroup.setVisible(false);
         deletePointCoordGroup.setVisible(false);
+        diagonalPointListGroup.setVisible(false);
     }
 
     private void drawBezierCurveByParameters() {
@@ -166,10 +172,24 @@ public class Controller implements Initializable {
 
     @FXML
     void onClearButtonClick(ActionEvent event) {
+        clearPane();
+    }
+
+    public void clearPane() {
         Graph.getChildren().clear();
         pointList.clear();
         circleList.clear();
+        clearFields();
         drawGraph();
+    }
+
+    public void clearFields() {
+        pxAddTf.clear();
+        pyAddTf.clear();
+        pyDeleteTf.clear();
+        pxDeleteTf.clear();
+        pointListTf.clear();
+        diagonalPointListTf.clear();
     }
 
     // Main Panel buttons
@@ -220,26 +240,44 @@ public class Controller implements Initializable {
 
     @FXML
     void onAddButtonClick(ActionEvent event) {
-        if (!isStepValuesCorrect()) {
+        if (!isStepValuesCorrect() || !isAddCoordinatesFieldsCorrectFilled()) {
             return;
         }
+
         double x = Double.parseDouble(pxAddTf.getText());
         double y = Double.parseDouble(pyAddTf.getText());
 
         Point point = new Point(x, y, 1);
         point.calculationGraphicsCoord(Graph, LINES_FREQUENCY);
 
-        /*List<Point> tempList = pointList;
-        List<Circle> tempCircList = circleList;*/
-
         Circle pointCircle = new Circle(point.getxGraph(), point.getyGraph(), 6, pointColor);
-        /*tempList.add(point);
-        tempCircList.add(pointCircle);*/
 
         pointList.add(point);
         circleList.add(pointCircle);
+        scalingToUserValue(pointList, circleList);
 
         updateGraph();
+
+        pxAddTf.clear();
+        pyAddTf.clear();
+    }
+
+    public boolean isAddCoordinatesFieldsCorrectFilled() {
+        if (pxAddTf.getText().isEmpty() || pyAddTf.getText().isEmpty()) {
+            return false;
+        }
+        try {
+            double xTemp = Double.parseDouble(pxAddTf.getText());
+            double yTemp = Double.parseDouble(pyAddTf.getText());
+
+            if (xTemp < -100 || xTemp > 100 || yTemp < -100 || yTemp > 100) {
+                return false;
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            // Input Label
+            return false;
+        }
     }
 
     /**
@@ -297,13 +335,12 @@ public class Controller implements Initializable {
             points.get(i).calculationGraphicsCoord(Graph, LINES_FREQUENCY);
             circles.get(i).setCenterX(points.get(i).getxGraph());
             circles.get(i).setCenterY(points.get(i).getyGraph());
-
         }
     }
 
     @FXML
     void onDeleteButtonClick(ActionEvent event) {
-        if (!isStepValuesCorrect()) {
+        if (!isStepValuesCorrect() || !isDeleteCoordinatesFieldsCorrectFilled()) {
             return;
         }
         double x = Double.parseDouble(pxDeleteTf.getText());
@@ -318,6 +355,22 @@ public class Controller implements Initializable {
             }
         }
         updateGraph();
+        pyDeleteTf.clear();
+        pxDeleteTf.clear();
+    }
+
+    public boolean isDeleteCoordinatesFieldsCorrectFilled() {
+        if (pxDeleteTf.getText().isEmpty() || pyDeleteTf.getText().isEmpty()) {
+            return false;
+        }
+        try {
+            double xTemp = Double.parseDouble(pxDeleteTf.getText());
+            double yTemp = Double.parseDouble(pyDeleteTf.getText());
+            return true;
+        } catch (NumberFormatException e) {
+            // Input Label
+            return false;
+        }
     }
 
     @FXML
@@ -548,6 +601,16 @@ public class Controller implements Initializable {
         Graph.getChildren().clear();
         drawGraph();
         drawBezierCurveByParameters();
+        fillLabelListOfPoint();
+    }
+
+    public void fillLabelListOfPoint() {
+        String str = "";
+        calculateCartCoordinateOfTheList(pointList);
+        for (Point point : pointList) {
+            str += (pointList.indexOf(point)+1) + ") x:" + point.getxCart() + ", y: " + point.getyCart() + "\n";
+        }
+        pointListTf.setText(str);
     }
 
     private void drawBezierCurve(GraphicsContext gcBezier, GraphicsContext gcPolygon) {
