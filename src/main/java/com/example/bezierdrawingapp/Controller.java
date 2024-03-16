@@ -32,9 +32,9 @@ public class Controller implements Initializable {
      */
     private final double MIN_LINES_STROKE = 0.2;
 
-    private final int MAX_MATRIX_POINTS_NUMBER = 30;
+    private final int MAX_MATRIX_POINTS_NUMBER = 31;
 
-    private final int MAX_PARAMETERS_POINTS_NUMBER = 100;
+    private final int MAX_PARAMETERS_POINTS_NUMBER = 101;
 
     private int MAX_POINTS = 0;
 
@@ -238,7 +238,7 @@ public class Controller implements Initializable {
             //
             autoFill();
             //
-            maxPointsNumLabel.setText("Max num of points " + MAX_PARAMETERS_POINTS_NUMBER);
+            maxPointsNumLabel.setText("Max order of curve " + (MAX_PARAMETERS_POINTS_NUMBER-1));
             MAX_POINTS = MAX_PARAMETERS_POINTS_NUMBER;
             diagonalSumGroup.setVisible(false);
             diagonalPointListGroup.setVisible(false);
@@ -252,7 +252,7 @@ public class Controller implements Initializable {
             //
             autoFill();
             //
-            maxPointsNumLabel.setText("Max num of points " + MAX_MATRIX_POINTS_NUMBER);
+            maxPointsNumLabel.setText("Max order of curve " + (MAX_MATRIX_POINTS_NUMBER-1));
             MAX_POINTS = MAX_MATRIX_POINTS_NUMBER;
             diagonalSumGroup.setVisible(true);
             inputStepGroup.setVisible(true);
@@ -317,7 +317,7 @@ public class Controller implements Initializable {
             return;
         }
         if (pointList.size()>=MAX_POINTS) {
-            showAlert("Warning", "There are maximum number of points " + MAX_POINTS +"/"+MAX_POINTS);
+            showAlert("Warning", "There is maximum order of curve " + (MAX_POINTS-1) +"/"+(MAX_POINTS-1));
             return;
         }
         addLabelWarning.setText("");
@@ -597,7 +597,7 @@ public class Controller implements Initializable {
         }
         if (!isDragging && event.getButton() == MouseButton.PRIMARY) {
             if (pointList.size()>=MAX_POINTS) {
-                showAlert("Warning", "There are maximum number of points " + MAX_POINTS +"/"+MAX_POINTS);
+                showAlert("Warning", "There is maximum order of curve " + (MAX_POINTS-1) +"/"+(MAX_POINTS-1));
                 return;
             }
             double x = event.getX();
@@ -738,7 +738,11 @@ public class Controller implements Initializable {
         gcPolygon.setStroke(polygonColor);
         gcPolygon.beginPath();
         for (int i = 0; i<pointList.size(); i++) {
-            Graph.getChildren().add(circleList.get(i));
+
+            Label number = new Label((i+1)+"");
+            number.setLayoutX(circleList.get(i).getCenterX()-2*circleList.get(i).getRadius());
+            number.setLayoutY(circleList.get(i).getCenterY()+circleList.get(i).getRadius());
+            Graph.getChildren().addAll(circleList.get(i), number);
             if (i == 0) {
                 gcPolygon.moveTo(controlPointsX[i], controlPointsY[i]);
             } else {
@@ -808,7 +812,11 @@ public class Controller implements Initializable {
         gcPolygon.setStroke(polygonColor);
         gcPolygon.beginPath();
         for (int i = 0; i<pointList.size(); i++) {
-            Graph.getChildren().add(circleList.get(i));
+            Label number = new Label((i+1)+"");
+            number.setLayoutX(circleList.get(i).getCenterX()-2*circleList.get(i).getRadius());
+            number.setLayoutY(circleList.get(i).getCenterY()+circleList.get(i).getRadius());
+            Graph.getChildren().addAll(circleList.get(i), number);
+
             if (i == 0) {
                 gcPolygon.moveTo(controlPointsX[i], controlPointsY[i]);
             } else {
