@@ -15,6 +15,9 @@ public class Point {
     private double xGraph;
     private double yGraph;
 
+    public Point() {
+    }
+
     public Point(double x, double y) {
         this.xGraph = x;
         this.yGraph = y;

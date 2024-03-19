@@ -31,85 +31,78 @@ public class Controller implements Initializable {
      * Натиск ліній графікічної площини
      */
     private final double MIN_LINES_STROKE = 0.2;
-
+    private final int CIRCLE_RADIUS = 6;
     private final int MAX_MATRIX_POINTS_NUMBER = 31;
-
     private final int MAX_PARAMETERS_POINTS_NUMBER = 101;
-
     private int MAX_POINTS = 0;
 
     @FXML
     private Label CoordinateLabel;
-
     @FXML
     private Label maxPointsNumLabel;
-
     @FXML
     private Label addLabelWarning;
-
     @FXML
     private Label deleteLabelWarning;
-
     @FXML
     private Label tLabelWarning;
-
+    @FXML
+    private Label editLabelWarning;
     @FXML
     private Pane Graph;
-
     @FXML
     private ChoiceBox<String> methodList;
-
     private final String[] methodsStr = {"Parameters", "Matrix"};
 
     //
     @FXML
     private TextField aTf;
-
     @FXML
     private TextField bTf;
-
     @FXML
     private TextField stepTf;
 
     //
     @FXML
     private TextField pxAddTf;
-
     @FXML
     private TextField pyAddTf;
 
     //
     @FXML
     private TextField pxDeleteTf;
-
     @FXML
     private TextField pyDeleteTf;
+    @FXML
+    private TextField pnDeleteTf;
+
+    //
+    @FXML
+    private TextField pnEditTf;
+    @FXML
+    private TextField pxEditTf;
+    @FXML
+    private TextField pyEditTf;
 
     //
     @FXML
     private ColorPicker polygonColorChooser;
-
     @FXML
     private ColorPicker curveColorChooser;
-
     @FXML
     private ColorPicker pointsColorChooser;
 
     //
     @FXML
     private TextArea pointListTf;
-
     @FXML
     private TextArea diagonalPointListTf;
-
     @FXML
     private TextField diagonalSumTf1;
-
     @FXML
     private TextField diagonalSumTf2;
 
     //Groups
-
     @FXML
     private Group inputStepGroup;
     @FXML
@@ -124,6 +117,8 @@ public class Controller implements Initializable {
     private Group diagonalPointListGroup;
     @FXML
     private Group diagonalSumGroup;
+    @FXML
+    private Group editPointGroup;
 
     private List<Point> pointList;
     private List<Circle> circleList;
@@ -171,6 +166,7 @@ public class Controller implements Initializable {
         deletePointCoordGroup.setVisible(false);
         diagonalPointListGroup.setVisible(false);
         diagonalSumGroup.setVisible(false);
+        editPointGroup.setVisible(false);
     }
 
     private void drawBezierCurveByParameters() {
@@ -228,6 +224,8 @@ public class Controller implements Initializable {
         addLabelWarning.setText("");
         deleteLabelWarning.setText("");
         tLabelWarning.setText("");
+        editLabelWarning.setText("");
+
     }
 
     // Main Panel buttons
@@ -247,6 +245,7 @@ public class Controller implements Initializable {
             pointListGroup.setVisible(true);
             colorChooseGroup.setVisible(true);
             deletePointCoordGroup.setVisible(true);
+            editPointGroup.setVisible(true);
         } else if (Objects.equals(methodList.getValue(), "Matrix")) {
             clearPane();
             //
@@ -261,6 +260,7 @@ public class Controller implements Initializable {
             colorChooseGroup.setVisible(true);
             deletePointCoordGroup.setVisible(true);
             diagonalPointListGroup.setVisible(true);
+            editPointGroup.setVisible(true);
         }
     }
 
@@ -327,7 +327,7 @@ public class Controller implements Initializable {
         Point point = new Point(x, y, 1);
         point.calculationGraphicsCoord(Graph, LINES_FREQUENCY);
 
-        Circle pointCircle = new Circle(point.getxGraph(), point.getyGraph(), 6, pointColor);
+        Circle pointCircle = new Circle(point.getxGraph(), point.getyGraph(), CIRCLE_RADIUS, pointColor);
 
         pointList.add(point);
         circleList.add(pointCircle);
@@ -460,7 +460,93 @@ public class Controller implements Initializable {
             deleteLabelWarning.setText("*The point does not exist");
             return false;
         } catch (NumberFormatException e) {
-            addLabelWarning.setText("*Incorrect input");
+            deleteLabelWarning.setText("*Incorrect input");
+            return false;
+        }
+    }
+
+    @FXML
+    void onDeleteNumberButtonClick(ActionEvent event) {
+        if (!isStepValuesCorrect()) {
+            deleteLabelWarning.setText("*Input step and interval");
+            return;
+        }
+        if (!isDeleteNumberFieldsCorrectFilled()) {
+            return;
+        }
+        deleteLabelWarning.setText("");
+        int n = Integer.parseInt(pnDeleteTf.getText());
+        pointList.remove(n-1);
+        circleList.remove(n-1);
+        updateGraph();
+        pnDeleteTf.clear();
+        pxDeleteTf.clear();
+    }
+
+    public boolean isDeleteNumberFieldsCorrectFilled() {
+        if (pnDeleteTf.getText().isEmpty()) {
+            deleteLabelWarning.setText("*Field empty");
+            return false;
+        }
+        try {
+            int nTemp = Integer.parseInt(pnDeleteTf.getText());
+            if (pointList.size()>=nTemp && nTemp>0) {
+                return true;
+            }
+            deleteLabelWarning.setText("*The point does not exist");
+            return false;
+        } catch (NumberFormatException e) {
+            deleteLabelWarning.setText("*Incorrect input");
+            return false;
+        }
+    }
+
+    @FXML
+    void onEditButtonClick(ActionEvent event) {
+        if (!isStepValuesCorrect()) {
+            editLabelWarning.setText("*Input step and interval");
+            return;
+        }
+        if (!isEditFieldsCorrectFilled()) {
+            return;
+        }
+        editLabelWarning.setText("");
+        int n = Integer.parseInt(pnEditTf.getText());
+        double x = Double.parseDouble(pxEditTf.getText());
+        double y = Double.parseDouble(pyEditTf.getText());
+
+        pointList.get(n-1).setxCart(x);
+        pointList.get(n-1).setyCart(y);
+        calculateGraphCoordinateOfTheList(pointList, circleList);
+        scalingToUserValue(pointList, circleList);
+        updateGraph();
+        pnEditTf.clear();
+        pxEditTf.clear();
+        pyEditTf.clear();
+    }
+
+    public boolean isEditFieldsCorrectFilled() {
+        if (pnEditTf.getText().isEmpty() || pxEditTf.getText().isEmpty() || pyEditTf.getText().isEmpty() ) {
+            editLabelWarning.setText("*Field empty");
+            return false;
+        }
+        try {
+            int nTemp = Integer.parseInt(pnEditTf.getText());
+            double xTemp = Double.parseDouble(pxEditTf.getText());
+            double yTemp = Double.parseDouble(pyEditTf.getText());
+
+            if (pointList.size()<nTemp || nTemp<=0) {
+                editLabelWarning.setText("*The point does not exist");
+                return false;
+            }
+            if (xTemp < -100 || xTemp > 100 || yTemp < -100 || yTemp > 100) {
+                editLabelWarning.setText("*Values must be between -100 and 100");
+                return false;
+            }
+            editLabelWarning.setText("*The point does not exist");
+            return true;
+        } catch (NumberFormatException e) {
+            editLabelWarning.setText("*Incorrect input");
             return false;
         }
     }
@@ -489,7 +575,6 @@ public class Controller implements Initializable {
         private final double MAX_ZOOM = 300;
         private final double MIN_ZOOM = 6;
 
-        //public double tempLinesFreq = LINES_FREQUENCY;
         @Override
         public void handle(ScrollEvent event) {
             double tempLinesFreq = LINES_FREQUENCY;
@@ -577,7 +662,6 @@ public class Controller implements Initializable {
                 selectedCircle.setCenterY(newMouseY);
             }
 
-            // Викликати оновлення графіку та інших елементів, якщо потрібно
             updateGraph();
         }
     }
@@ -604,12 +688,13 @@ public class Controller implements Initializable {
             double y = event.getY();
 
             Point point = new Point((int) x, (int) y);
-            pointList.add(point);
 
-            Circle pointCircle = new Circle(x, y, 6, pointColor);
-            circleList.add(pointCircle);
-
-            //Graph.getChildren().add(pointCircle);
+            if (getPointBetween(point)) {
+            }else {
+                pointList.add(point);
+                Circle pointCircle = new Circle(x, y, CIRCLE_RADIUS, pointColor);
+                circleList.add(pointCircle);
+            }
 
             updateGraph();
             return;
@@ -626,6 +711,63 @@ public class Controller implements Initializable {
                 }
             }
         }
+    }
+
+    public boolean getPointBetween(Point point) {
+        for (int i = 0; i<pointList.size()-1; i++) {
+            double dist = Math.sqrt(Math.pow(pointList.get(i + 1).getxGraph() - pointList.get(i).getxGraph(), 2) +
+                    Math.pow(pointList.get(i + 1).getyGraph() - pointList.get(i).getyGraph(), 2));
+            System.out.println(dist);
+            if (isPointInRange(point, pointList.get(i), pointList.get(i + 1), dist)) {
+                System.out.println("Yes");
+                Point middlePoint = calculateMidpoint(pointList.get(i), pointList.get(i + 1));
+                pointList.add(i+1, middlePoint);
+                Circle pointCircle = new Circle(middlePoint.getxGraph(), middlePoint.getyGraph(), CIRCLE_RADIUS, pointColor);
+                circleList.add(i+1, pointCircle);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isPointInRange(Point point, Point first, Point second, double dist) {
+        double percent = CIRCLE_RADIUS/dist;
+        Point[] points = new Point[4];
+        points[0] = new Point(
+                first.getxGraph() + percent * (second.getxGraph() - first.getxGraph()),
+                first.getyGraph() - percent * (second.getyGraph() - first.getyGraph()));
+        points[1] = new Point(
+                first.getxGraph() - percent * (second.getxGraph() - first.getxGraph()),
+                first.getyGraph() + percent * (second.getyGraph() - first.getyGraph()));
+        points[2] = new Point(
+                second.getxGraph() + percent * (first.getxGraph() - second.getxGraph()),
+                second.getyGraph() - percent * (first.getyGraph() - second.getyGraph()));
+        points[3] = new Point(
+                second.getxGraph() - percent * (first.getxGraph() - second.getxGraph()),
+                second.getyGraph() + percent * (first.getyGraph() - second.getyGraph()));
+
+        for (Point pointT : points) {
+            System.out.println(pointT.getxGraph() + " " + pointT.getyGraph() + "\n");
+            Graph.getChildren().add(new Circle(pointT.getxGraph(), pointT.getyGraph(), 2, Color.BLUE));
+        }
+
+        System.out.println(point.getxGraph() +" " + point.getyGraph());
+
+        Polygon polygon = new Polygon(
+                points[0].getxGraph(), points[0].getyGraph(),
+                points[1].getxGraph(), points[1].getyGraph(),
+                points[2].getxGraph(), points[2].getyGraph(),
+                points[3].getxGraph(), points[3].getyGraph()
+        );
+        Graph.getChildren().add(polygon);
+        return polygon.contains(point.getxGraph(), point.getyGraph());
+    }
+
+    public Point calculateMidpoint(Point point1, Point point2) {
+        double midX = (point1.getxGraph() + point2.getxGraph()) / 2.0;
+        double midY = (point1.getyGraph() + point2.getyGraph()) / 2.0;
+
+        return new Point(midX, midY);
     }
 
     /**
@@ -742,12 +884,16 @@ public class Controller implements Initializable {
             Label number = new Label((i+1)+"");
             number.setLayoutX(circleList.get(i).getCenterX()-2*circleList.get(i).getRadius());
             number.setLayoutY(circleList.get(i).getCenterY()+circleList.get(i).getRadius());
-            Graph.getChildren().addAll(circleList.get(i), number);
             if (i == 0) {
                 gcPolygon.moveTo(controlPointsX[i], controlPointsY[i]);
             } else {
                 gcPolygon.lineTo(controlPointsX[i], controlPointsY[i]);
             }
+            circleList.get(i).setFill(pointColor);
+            if (i==0 || i==pointList.size()-1) {
+                circleList.get(i).setFill(Color.MAROON);
+            }
+            Graph.getChildren().addAll(circleList.get(i), number);
         }
         gcPolygon.stroke();
 
@@ -815,13 +961,18 @@ public class Controller implements Initializable {
             Label number = new Label((i+1)+"");
             number.setLayoutX(circleList.get(i).getCenterX()-2*circleList.get(i).getRadius());
             number.setLayoutY(circleList.get(i).getCenterY()+circleList.get(i).getRadius());
-            Graph.getChildren().addAll(circleList.get(i), number);
 
             if (i == 0) {
                 gcPolygon.moveTo(controlPointsX[i], controlPointsY[i]);
             } else {
                 gcPolygon.lineTo(controlPointsX[i], controlPointsY[i]);
             }
+
+            circleList.get(i).setFill(pointColor);
+            if (i==0 || i==pointList.size()-1) {
+                circleList.get(i).setFill(Color.MAROON);
+            }
+            Graph.getChildren().addAll(circleList.get(i), number);
         }
         gcPolygon.stroke();
 

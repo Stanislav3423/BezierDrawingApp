@@ -11,7 +11,7 @@ public class DrawingApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(DrawingApplication.class.getResource("MainWindowDrawingBezierCurveApp.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1167, 714);
+        Scene scene = new Scene(fxmlLoader.load(), 1192, 739);
         stage.setTitle("Drawing Bezier Curve");
         stage.setScene(scene);
         stage.setResizable(false);

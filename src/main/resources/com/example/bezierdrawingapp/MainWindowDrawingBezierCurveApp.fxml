@@ -11,16 +11,16 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="714.0" prefWidth="1167.0" style="-fx-background-color: #636363;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.bezierdrawingapp.Controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="739.0" prefWidth="1192.0" style="-fx-background-color: #636363;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.bezierdrawingapp.Controller">
 <children>
-  <AnchorPane fx:id="ManagementPane" layoutX="14.0" layoutY="14.0" prefHeight="689.0" prefWidth="435.0" style="-fx-background-color: #404040; -fx-background-radius: 10px;">
+  <AnchorPane fx:id="ManagementPane" layoutX="10.0" layoutY="11.0" prefHeight="715.0" prefWidth="446.0" style="-fx-background-color: #404040; -fx-background-radius: 10px;">
     <children>
       <Label alignment="CENTER" layoutX="123.0" layoutY="20.0" prefHeight="27.0" prefWidth="199.0" text="Figure to build: Bezier Curve" textFill="WHITE">
         <font>
           <Font size="14.0" />
         </font>
       </Label>
-            <Group layoutX="31.0" layoutY="54.0">
+            <Group layoutX="30.0" layoutY="47.0">
                <children>
                   <Label prefHeight="55.0" prefWidth="150.0" text="Choose method of &#10;creating curve" textFill="WHITE">
                      <font>
@@ -28,7 +28,7 @@
                      </font>
                   </Label>
                   <ChoiceBox fx:id="methodList" layoutX="136.0" layoutY="15.0" prefWidth="150.0" />
-                  <Button fx:id="chooseMethodButton" layoutX="304.0" layoutY="14.0" mnemonicParsing="false" onAction="#onChooseMethodButtonClicked" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #a8a8a8; -fx-background-radius: 6;" text="Choose" />
+                  <Button fx:id="chooseMethodButton" layoutX="304.0" layoutY="14.0" mnemonicParsing="false" onAction="#onChooseMethodButtonClicked" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #bababa; -fx-background-radius: 6;" text="Choose" />
                   <Label fx:id="maxPointsNumLabel" layoutX="154.0" layoutY="46.0" prefHeight="16.0" prefWidth="116.0" textFill="#808080">
                      <font>
                         <Font size="11.0" />
@@ -36,7 +36,7 @@
                   </Label>
                </children>
             </Group>
-            <Group fx:id="newPointCoordGroup" layoutX="22.0" layoutY="177.0">
+            <Group fx:id="newPointCoordGroup" layoutX="21.0" layoutY="170.0">
                <children>
             <Label prefHeight="27.0" prefWidth="177.0" text="Coordinates of next point" textFill="WHITE">
               <font>
@@ -67,49 +67,82 @@
                   </Label>
                </children>
             </Group>
-            <Group fx:id="colorChooseGroup" layoutX="35.0" layoutY="280.0">
+            <Group fx:id="editPointGroup" layoutX="21.0" layoutY="313.0">
                <children>
-                  <Group>
-                     <children>
-                  <Label layoutX="-13.0" prefHeight="27.0" prefWidth="197.0" text="Select color of the polygon" textFill="WHITE">
-                    <font>
-                      <Font size="14.0" />
-                    </font>
+                  <Label prefHeight="64.0" prefWidth="155.0" text="Enter number of point&#10;and coordinate of new &#10;position" textFill="WHITE">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
                   </Label>
-                  <ColorPicker fx:id="polygonColorChooser" layoutX="184.0" layoutY="1.0" />
-                  <Button fx:id="polygonColorButton" layoutX="323.0" mnemonicParsing="false" onAction="#onPolygonColorButtonClick" prefHeight="27.0" prefWidth="57.0" style="-fx-background-color: #a1c96d; -fx-background-radius: 6;" text="Choose" />
-                     </children>
-                  </Group>
-                  <Group layoutY="37.0">
+                  <Group layoutX="275.0" layoutY="1.0">
                      <children>
-                        <Label layoutX="-13.0" prefHeight="27.0" prefWidth="197.0" text="Select color of the curve" textFill="WHITE">
+                        <TextField fx:id="pxEditTf" layoutX="15.0" layoutY="1.0" prefHeight="25.0" prefWidth="47.0" />
+                        <TextField fx:id="pyEditTf" layoutX="82.0" layoutY="1.0" prefHeight="25.0" prefWidth="47.0" />
+                        <Label prefHeight="27.0" prefWidth="15.0" text="x:" textFill="WHITE">
                            <font>
                               <Font size="14.0" />
                            </font>
                         </Label>
-                        <ColorPicker fx:id="curveColorChooser" layoutX="184.0" layoutY="1.0" />
-                        <Button fx:id="curveColorButton" layoutX="323.0" mnemonicParsing="false" onAction="#onCurveColorButtonClick" prefHeight="27.0" prefWidth="57.0" style="-fx-background-color: #a1c96d; -fx-background-radius: 6;" text="Choose" />
-                     </children>
-                  </Group>
-                  <Group layoutY="75.0">
-                     <children>
-                        <Label layoutX="-13.0" prefHeight="27.0" prefWidth="197.0" text="Select color of the points" textFill="WHITE">
+                        <Label layoutX="68.0" prefHeight="27.0" prefWidth="15.0" text="y:" textFill="WHITE">
                            <font>
                               <Font size="14.0" />
                            </font>
                         </Label>
-                        <ColorPicker fx:id="pointsColorChooser" layoutX="184.0" layoutY="1.0" />
-                        <Button fx:id="pointColorButton" layoutX="323.0" mnemonicParsing="false" onAction="#onPointColorButtonClick" prefHeight="27.0" prefWidth="57.0" style="-fx-background-color: #a1c96d; -fx-background-radius: 6;" text="Choose" />
                      </children>
                   </Group>
+                  <Button fx:id="editButton" layoutX="257.0" layoutY="40.0" mnemonicParsing="false" onAction="#onEditButtonClick" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #a1c96d; -fx-background-radius: 6;" text="Edit" />
+                  <Label fx:id="editLabelWarning" layoutY="63.0" prefHeight="16.0" prefWidth="381.0" text="*dfdfsdfsdf" textFill="#ff8181">
+                     <font>
+                        <Font size="11.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="pnEditTf" layoutX="202.0" layoutY="2.0" prefHeight="25.0" prefWidth="47.0" />
+                  <Label layoutX="165.0" layoutY="1.0" prefHeight="27.0" prefWidth="44.0" text="num:" textFill="WHITE">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
                </children>
             </Group>
-      <Button fx:id="clearButton" layoutX="169.0" layoutY="637.0" mnemonicParsing="false" onAction="#onClearButtonClick" prefHeight="30.0" prefWidth="98.0" style="-fx-background-color: #bababa; -fx-background-radius: 6;" text="Clear Graph">
-        <font>
-          <Font size="14.0" />
-        </font>
-      </Button>
-            <Group fx:id="inputStepGroup" layoutX="36.0" layoutY="109.0">
+            <Group fx:id="deletePointCoordGroup" layoutX="21.0" layoutY="222.0">
+               <children>
+                  <Label layoutY="-12.0" prefHeight="52.0" prefWidth="177.0" text="Coordinates of point to &#10;delete" textFill="WHITE">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Group layoutX="175.0">
+                     <children>
+                        <TextField fx:id="pxDeleteTf" layoutX="15.0" layoutY="1.0" prefHeight="25.0" prefWidth="47.0" />
+                        <TextField fx:id="pyDeleteTf" layoutX="82.0" layoutY="1.0" prefHeight="25.0" prefWidth="47.0" />
+                        <Label prefHeight="27.0" prefWidth="15.0" text="x:" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="68.0" prefHeight="27.0" prefWidth="15.0" text="y:" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </Group>
+                  <Button fx:id="deleteButton" layoutX="322.0" mnemonicParsing="false" onAction="#onDeleteButtonClick" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #ff9a63; -fx-background-radius: 6;" text="Delete" />
+                  <Label fx:id="deleteLabelWarning" layoutY="62.0" prefHeight="16.0" prefWidth="381.0" text="*dfdfsdfsdf" textFill="#ff8181">
+                     <font>
+                        <Font size="11.0" />
+                     </font>
+                  </Label>
+                  <Label layoutY="27.0" prefHeight="52.0" prefWidth="171.0" text="Number of point to delete" textFill="WHITE">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="pnDeleteTf" layoutX="192.0" layoutY="43.0" prefHeight="25.0" prefWidth="47.0" />
+                  <Button fx:id="deleteNumberButton" layoutX="260.0" layoutY="42.0" mnemonicParsing="false" onAction="#onDeleteNumberButtonClick" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #ff9a63; -fx-background-radius: 6;" text="Delete" />
+               </children>
+            </Group>
+            <Group fx:id="inputStepGroup" layoutX="35.0" layoutY="102.0">
                <children>
                   <Label prefHeight="55.0" prefWidth="43.0" text="Input" textFill="WHITE">
                      <font>
@@ -152,38 +185,44 @@
                   </Label>
                </children>
             </Group>
-            <Group fx:id="deletePointCoordGroup" layoutX="22.0" layoutY="223.0">
+            <Group fx:id="colorChooseGroup" layoutX="34.0" layoutY="392.0">
                <children>
-                  <Label layoutY="-12.0" prefHeight="52.0" prefWidth="177.0" text="Coordinates of point to &#10;delete" textFill="WHITE">
-                     <font>
-                        <Font size="14.0" />
-                     </font>
-                  </Label>
-                  <Group layoutX="175.0">
+                  <Group>
                      <children>
-                        <TextField fx:id="pxDeleteTf" layoutX="15.0" layoutY="1.0" prefHeight="25.0" prefWidth="47.0" />
-                        <TextField fx:id="pyDeleteTf" layoutX="82.0" layoutY="1.0" prefHeight="25.0" prefWidth="47.0" />
-                        <Label prefHeight="27.0" prefWidth="15.0" text="x:" textFill="WHITE">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                        </Label>
-                        <Label layoutX="68.0" prefHeight="27.0" prefWidth="15.0" text="y:" textFill="WHITE">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                        </Label>
+                  <Label layoutX="-13.0" prefHeight="27.0" prefWidth="197.0" text="Select color of the polygon" textFill="WHITE">
+                    <font>
+                      <Font size="14.0" />
+                    </font>
+                  </Label>
+                  <ColorPicker fx:id="polygonColorChooser" layoutX="184.0" layoutY="1.0" />
+                  <Button fx:id="polygonColorButton" layoutX="323.0" mnemonicParsing="false" onAction="#onPolygonColorButtonClick" prefHeight="27.0" prefWidth="57.0" style="-fx-background-color: #a1c96d; -fx-background-radius: 6;" text="Choose" />
                      </children>
                   </Group>
-                  <Button fx:id="deleteButton" layoutX="322.0" mnemonicParsing="false" onAction="#onDeleteButtonClick" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #ff9a63; -fx-background-radius: 6;" text="Delete" />
-                  <Label fx:id="deleteLabelWarning" layoutY="35.0" prefHeight="16.0" prefWidth="381.0" text="*dfdfsdfsdf" textFill="#ff8181">
-                     <font>
-                        <Font size="11.0" />
-                     </font>
-                  </Label>
+                  <Group layoutY="37.0">
+                     <children>
+                        <Label layoutX="-13.0" prefHeight="27.0" prefWidth="197.0" text="Select color of the curve" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <ColorPicker fx:id="curveColorChooser" layoutX="184.0" layoutY="1.0" />
+                        <Button fx:id="curveColorButton" layoutX="323.0" mnemonicParsing="false" onAction="#onCurveColorButtonClick" prefHeight="27.0" prefWidth="57.0" style="-fx-background-color: #a1c96d; -fx-background-radius: 6;" text="Choose" />
+                     </children>
+                  </Group>
+                  <Group layoutY="75.0">
+                     <children>
+                        <Label layoutX="-13.0" prefHeight="27.0" prefWidth="197.0" text="Select color of the points" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <ColorPicker fx:id="pointsColorChooser" layoutX="184.0" layoutY="1.0" />
+                        <Button fx:id="pointColorButton" layoutX="323.0" mnemonicParsing="false" onAction="#onPointColorButtonClick" prefHeight="27.0" prefWidth="57.0" style="-fx-background-color: #a1c96d; -fx-background-radius: 6;" text="Choose" />
+                     </children>
+                  </Group>
                </children>
             </Group>
-            <Group fx:id="pointListGroup" layoutX="34.0" layoutY="396.0">
+            <Group fx:id="pointListGroup" layoutX="33.0" layoutY="495.0">
                <children>
                   <Label layoutX="-12.0" prefHeight="27.0" prefWidth="131.0" text="List of exists points:" textFill="WHITE">
                      <font>
@@ -193,7 +232,7 @@
                   <TextArea fx:id="pointListTf" layoutX="-12.0" layoutY="31.0" prefHeight="89.0" prefWidth="187.0" />
                </children>
             </Group>
-            <Group fx:id="diagonalPointListGroup" layoutX="240.0" layoutY="396.0">
+            <Group fx:id="diagonalPointListGroup" layoutX="239.0" layoutY="495.0">
                <children>
                   <Label layoutX="-12.0" prefHeight="27.0" prefWidth="174.0" text="List of matrix elements:" textFill="WHITE">
                      <font>
@@ -203,7 +242,7 @@
                   <TextArea fx:id="diagonalPointListTf" layoutX="-12.0" layoutY="31.0" prefHeight="89.0" prefWidth="187.0" />
                </children>
             </Group>
-            <Group fx:id="diagonalSumGroup" layoutX="-28.0" layoutY="530.0">
+            <Group fx:id="diagonalSumGroup" layoutX="-29.0" layoutY="623.0">
                <children>
                   <Label layoutX="50.0" prefHeight="27.0" prefWidth="154.0" text="Diagonals element sum:" textFill="WHITE">
                      <font>
@@ -224,10 +263,15 @@
                   </Label>
                </children>
             </Group>
+      <Button fx:id="clearButton" layoutX="170.0" layoutY="671.0" mnemonicParsing="false" onAction="#onClearButtonClick" prefHeight="30.0" prefWidth="98.0" style="-fx-background-color: #bababa; -fx-background-radius: 6;" text="Clear Graph">
+        <font>
+          <Font size="14.0" />
+        </font>
+      </Button>
     </children></AnchorPane>
-  <AnchorPane fx:id="GraphPane" layoutX="462.0" layoutY="15.0" prefHeight="689.0" prefWidth="689.0" style="-fx-background-color: #404040; -fx-background-radius: 10px;">
+  <AnchorPane fx:id="GraphPane" layoutX="466.0" layoutY="12.0" prefHeight="715.0" prefWidth="715.0" style="-fx-background-color: #404040; -fx-background-radius: 10px;">
     <children>
-      <Pane fx:id="Graph" layoutX="13.0" layoutY="13.0" prefHeight="665.0" prefWidth="665.0" style="-fx-background-color: #bababa; -fx-background-radius: 10px;" />
+      <Pane fx:id="Graph" layoutX="13.0" layoutY="13.0" prefHeight="690.0" prefWidth="690.0" style="-fx-background-color: #bababa; -fx-background-radius: 10px;" />
       <Pane fx:id="Graph1" layoutX="19.0" layoutY="20.0" prefHeight="27.0" prefWidth="137.0" style="-fx-background-color: #404040; -fx-background-radius: 10px;">
         <children>
           <Label fx:id="CoordinateLabel" alignment="CENTER" layoutX="11.0" layoutY="4.0" prefHeight="20.0" prefWidth="116.0" textFill="WHITE">
