@@ -20,6 +20,9 @@ import javafx.scene.Group;
 import java.net.URL;
 import java.util.*;
 
+/**
+ * Клас-контроллер головного вікна
+ */
 public class Controller implements Initializable {
 
     /**
@@ -31,11 +34,28 @@ public class Controller implements Initializable {
      * Натиск ліній графікічної площини
      */
     private final double MIN_LINES_STROKE = 0.2;
+
+    /**
+     * Радіус кола точки
+     */
     private final int CIRCLE_RADIUS = 6;
+
+    /**
+     * Максимальна кількість точок побудови кривої матричним методом
+     */
     private final int MAX_MATRIX_POINTS_NUMBER = 31;
+
+    /**
+     * Максимальна кількість точок побудови кривої параметричним методом
+     */
     private final int MAX_PARAMETERS_POINTS_NUMBER = 101;
+
+    /**
+     * Змінна для присвоєння максимальних значень кількості точок
+     */
     private int MAX_POINTS = 0;
 
+    // Віконні елементи
     @FXML
     private Label CoordinateLabel;
     @FXML
@@ -120,11 +140,34 @@ public class Controller implements Initializable {
     @FXML
     private Group editPointGroup;
 
+    /**
+     * Список точок кривої
+     */
     private List<Point> pointList;
+
+    /**
+     * Список кіл, що обводять точки кривої
+     */
     private List<Circle> circleList;
+
+    /**
+     * Змінна, що відображає статус процесу перетягування точки
+     */
     private boolean isDragging = false;
-    private Circle selectedCircle;  // Вибране коло для перетягування
+
+    /**
+     * Вибране коло для перетягування
+     */
+    private Circle selectedCircle;
+
+    /**
+     * Змінні проміжків та шляху
+     */
     double a, b, step;
+
+    /**
+     * Змінні кольрів елементів кривої
+     */
     private Color polygonColor;
     private Color curveColor;
     private Color pointColor;
@@ -169,6 +212,9 @@ public class Controller implements Initializable {
         editPointGroup.setVisible(false);
     }
 
+    /**
+     * Функція малювання кривої на панелі за параметричним методом
+     */
     private void drawBezierCurveByParameters() {
         Canvas canvasBezier = new Canvas(Graph.getPrefWidth(), Graph.getPrefHeight());
         Canvas canvasPolygon = new Canvas(Graph.getPrefWidth(), Graph.getPrefHeight());
@@ -178,6 +224,9 @@ public class Controller implements Initializable {
         drawBezierCurveParameters(gcBezier, gcPolygon);
     }
 
+    /**
+     * Функція малювання кривої на панелі за матричним методом
+     */
     private void drawBezierCurveByMatrix() {
         Canvas canvasBezier = new Canvas(Graph.getPrefWidth(), Graph.getPrefHeight());
         Canvas canvasPolygon = new Canvas(Graph.getPrefWidth(), Graph.getPrefHeight());
@@ -194,12 +243,17 @@ public class Controller implements Initializable {
     }
 
 
-    // Button panel buttons
+    /**
+     * Функція-слухач для кнопки Clear (очиищення вікна)
+     */
     @FXML
     void onClearButtonClick(ActionEvent event) {
         clearPane();
     }
 
+    /**
+     * Функція очищення панелі й списків точок
+     */
     public void clearPane() {
         Graph.getChildren().clear();
         pointList.clear();
@@ -209,6 +263,9 @@ public class Controller implements Initializable {
         drawGraph();
     }
 
+    /**
+     * Функція очищення текстових полів вікна
+     */
     public void clearFields() {
         aTf.clear();
         bTf.clear();
@@ -228,7 +285,9 @@ public class Controller implements Initializable {
 
     }
 
-    // Main Panel buttons
+    /**
+     * Функція-слухач для кнопки Choose (вибір методу побудови кривої)
+     */
     @FXML
     void onChooseMethodButtonClicked(ActionEvent event) {
         if (Objects.equals(methodList.getValue(), "Parameters")) {
@@ -264,6 +323,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-слухач для кнопки Input (встановлення проміжку та кроку)
+     */
     @FXML
     void onInputButtonClick(ActionEvent event) {
         if (isStepFieldsCorrectFilled()) {
@@ -275,6 +337,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-перевірка на коректне заповнення полів вводу кроку та проміжку
+     */
     public boolean isStepFieldsCorrectFilled() {
         if (aTf.getText().isEmpty() || bTf.getText().isEmpty() || stepTf.getText().isEmpty()) {
             tLabelWarning.setText("*Field empty");
@@ -296,17 +361,25 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-перевірка на коректні зачення проміжку та кроку
+     */
     public boolean isStepValuesCorrect() {
         return !(step <= 0) && !(a < 0) && !(a >= 1) && !(b <= 0) && !(b > 1);
     }
 
+    /**
+     * Функція занулення значень кроку та проміжку
+     */
     public void nullStepValue() {
         step=-1;
         a=-1;
         b=-1;
     }
 
-
+    /**
+     * Функція-слухач для кнопки Add (додавання нової точки до кривої)
+     */
     @FXML
     void onAddButtonClick(ActionEvent event) {
         if (!isStepValuesCorrect()) {
@@ -339,6 +412,9 @@ public class Controller implements Initializable {
         pyAddTf.clear();
     }
 
+    /**
+     * Функція-перевірка на коректні значення координат нової точки
+     */
     public boolean isAddCoordinatesFieldsCorrectFilled() {
         if (pxAddTf.getText().isEmpty() || pyAddTf.getText().isEmpty()) {
             addLabelWarning.setText("*Field empty");
@@ -417,6 +493,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-слухач для кнопки Delete (видалення точки кривої за  координатами)
+     */
     @FXML
     void onDeleteButtonClick(ActionEvent event) {
         if (!isStepValuesCorrect()) {
@@ -443,6 +522,9 @@ public class Controller implements Initializable {
         pxDeleteTf.clear();
     }
 
+    /**
+     * Функція-перевірка на коректні значення координат точки для видалення
+     */
     public boolean isDeleteCoordinatesFieldsCorrectFilled() {
         if (pxDeleteTf.getText().isEmpty() || pyDeleteTf.getText().isEmpty()) {
             deleteLabelWarning.setText("*Field empty");
@@ -465,6 +547,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-слухач для кнопки Delete (видалення точки кривої за номером точки)
+     */
     @FXML
     void onDeleteNumberButtonClick(ActionEvent event) {
         if (!isStepValuesCorrect()) {
@@ -483,6 +568,9 @@ public class Controller implements Initializable {
         pxDeleteTf.clear();
     }
 
+    /**
+     * Функція-перевірка на коректні значення номера точки для видалення
+     */
     public boolean isDeleteNumberFieldsCorrectFilled() {
         if (pnDeleteTf.getText().isEmpty()) {
             deleteLabelWarning.setText("*Field empty");
@@ -501,6 +589,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-слухач для кнопки Edit (редагування точки за розташуванням)
+     */
     @FXML
     void onEditButtonClick(ActionEvent event) {
         if (!isStepValuesCorrect()) {
@@ -525,6 +616,9 @@ public class Controller implements Initializable {
         pyEditTf.clear();
     }
 
+    /**
+     * Функція-перевірка на коректні значення номеру точки та нових координат для редагування розміщення
+     */
     public boolean isEditFieldsCorrectFilled() {
         if (pnEditTf.getText().isEmpty() || pxEditTf.getText().isEmpty() || pyEditTf.getText().isEmpty() ) {
             editLabelWarning.setText("*Field empty");
@@ -551,18 +645,27 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-слухач для кнопки Choose вибору нового кольору сторін многокутника
+     */
     @FXML
     void onPolygonColorButtonClick(ActionEvent event) {
         polygonColor = polygonColorChooser.getValue();
         updateGraph();
     }
 
+    /**
+     * Функція-слухач для кнопки Choose вибору нового кольору кривої
+     */
     @FXML
     void onCurveColorButtonClick(ActionEvent event) {
         curveColor = curveColorChooser.getValue();
         updateGraph();
     }
 
+    /**
+     * Функція-слухач для кнопки Choose вибору нового кольору керуючих точок
+     */
     @FXML
     void onPointColorButtonClick(ActionEvent event) {
         pointColor = pointsColorChooser.getValue();
@@ -571,6 +674,10 @@ public class Controller implements Initializable {
         }
         updateGraph();
     }
+
+    /**
+     * Вбудований клас для обробки події скролінгу панелі з графіком
+     */
     private class ZoomHandler implements EventHandler<ScrollEvent> {
         private final double MAX_ZOOM = 300;
         private final double MIN_ZOOM = 6;
@@ -598,6 +705,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція обчислення графічних координат списку точок
+     */
     public void calculateGraphCoordinateOfTheList(List<Point> pointList, List<Circle> circleList){
         for (int i = 0; i<pointList.size(); i++) {
             pointList.get(i).calculationGraphicsCoord(Graph, LINES_FREQUENCY);
@@ -606,12 +716,18 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція обчислення декартових координат списку точок
+     */
     public void calculateCartCoordinateOfTheList(List<Point> pointList){
         for (Point point: pointList) {
             point.calculationCartesianCoord(Graph, LINES_FREQUENCY);
         }
     }
 
+    /**
+     * Функція-перевірка на вихід точок зі списку за межі координатної площини
+     */
     public boolean beyondLimits() {
         int temp = 0;
         for (Point entry: pointList) {
@@ -634,6 +750,9 @@ public class Controller implements Initializable {
         CoordinateLabel.setText("x: " + point.getxCart() + " , y: " + point.getyCart());
     }
 
+    /**
+     * Функція обробки підії вибору точки для перетягування натиском на середю кнопку миші
+     */
     private void handleMiddleMousePressed(MouseEvent event) {
         if (event.getButton() == MouseButton.MIDDLE) {
             for (Circle circle : circleList) {
@@ -645,6 +764,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція обробки події перетягування точки за допомогою зажатої середньої кнопки миші
+     */
     private void handleMiddleMouseDragged(MouseEvent event) {
         if (selectedCircle != null && event.getButton() == MouseButton.MIDDLE) {
             double newMouseX = event.getX();
@@ -666,6 +788,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція-переввірка чи точка виходить за межі координатної площини
+     */
     public boolean pointBeyondLimit(Point point) {
         if (point.getxGraph()>Graph.getPrefWidth() || point.getxGraph()<0
                 || point.getyGraph()>Graph.getPrefHeight() || point.getyGraph()<0) {
@@ -674,6 +799,9 @@ public class Controller implements Initializable {
         return false;
     }
 
+    /**
+     * Функція обробки події натиску на кнопки миші (ліва, права)
+     */
     private void handleMouseClick(MouseEvent event) {
         if (!isStepValuesCorrect()) {
             showAlert("Warning", "Input step and interval");
@@ -713,6 +841,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція вставлення точки між 2 іншими точками
+     */
     public boolean getPointBetween(Point point) {
         for (int i = 0; i<pointList.size()-1; i++) {
             double dist = Math.sqrt(Math.pow(pointList.get(i + 1).getxGraph() - pointList.get(i).getxGraph(), 2) +
@@ -730,6 +861,9 @@ public class Controller implements Initializable {
         return false;
     }
 
+    /**
+     * Перевірка на правильне розміщення точки для вставлення
+     */
     public boolean isPointInRange(Point point, Point first, Point second, double dist) {
         double percent = CIRCLE_RADIUS/dist;
         Point[] points = new Point[4];
@@ -746,10 +880,10 @@ public class Controller implements Initializable {
                 second.getxGraph() - percent * (first.getxGraph() - second.getxGraph()),
                 second.getyGraph() + percent * (first.getyGraph() - second.getyGraph()));
 
-        for (Point pointT : points) {
+        /*for (Point pointT : points) {
             System.out.println(pointT.getxGraph() + " " + pointT.getyGraph() + "\n");
             Graph.getChildren().add(new Circle(pointT.getxGraph(), pointT.getyGraph(), 2, Color.BLUE));
-        }
+        }*/
 
         System.out.println(point.getxGraph() +" " + point.getyGraph());
 
@@ -763,6 +897,9 @@ public class Controller implements Initializable {
         return polygon.contains(point.getxGraph(), point.getyGraph());
     }
 
+    /**
+     * Функція обчислення середньої точки між 2 іншими
+     */
     public Point calculateMidpoint(Point point1, Point point2) {
         double midX = (point1.getxGraph() + point2.getxGraph()) / 2.0;
         double midY = (point1.getyGraph() + point2.getyGraph()) / 2.0;
@@ -848,6 +985,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція оновлення графіка з кривою
+     */
     public void updateGraph() {
         Graph.getChildren().clear();
         drawGraph();
@@ -859,6 +999,9 @@ public class Controller implements Initializable {
         fillLabelListOfPoint();
     }
 
+    /**
+     * Функція заповнення поля списку точок кривої
+     */
     public void fillLabelListOfPoint() {
         String str = "";
         calculateCartCoordinateOfTheList(pointList);
@@ -868,6 +1011,9 @@ public class Controller implements Initializable {
         pointListTf.setText(str);
     }
 
+    /**
+     * Функція малювання кривої параметричним методом
+     */
     private void drawBezierCurveParameters(GraphicsContext gcBezier, GraphicsContext gcPolygon) {
         if (!isStepValuesCorrect()) {
             return;
@@ -919,7 +1065,9 @@ public class Controller implements Initializable {
         gcBezier.stroke();
     }
 
-    // Parameters Method
+    /**
+     * Функція обчислення координат точки кривої
+     */
     private double calculateBezierParametersCoordinate(double t, double[] controlPoints, int n) {
         double result = 0;
         for (int i = 0; i <= n; i++) {
@@ -928,6 +1076,9 @@ public class Controller implements Initializable {
         return result;
     }
 
+    /**
+     * Функція обчислення коефіцієнта
+     */
     private static double binomialCoefficient(int n, int i) {
         if (i == 0 || i == n) {
             return 1;
@@ -944,8 +1095,9 @@ public class Controller implements Initializable {
         return result;
     }
 
-    // Matrix Method
-
+    /**
+     * Функція побудови кривої матричним методом
+     */
     private void drawBezierCurveMatrix(GraphicsContext gcBezier, GraphicsContext gcPolygon) {
         if (!isStepValuesCorrect()) {
             return;
@@ -1003,6 +1155,9 @@ public class Controller implements Initializable {
         gcBezier.stroke();
     }
 
+    /**
+     * Функція обчислення координат точки кривої
+     */
     private double calculateBezierMatrixCoordinate(double t, double[][] coefficientsMatrix, double[] controlPoints, int n) {
         double[] tMatrix = computeTMatrix(t, n);
 
@@ -1021,6 +1176,9 @@ public class Controller implements Initializable {
         return result;
     }
 
+    /**
+     * Функція обчислення матриці коефіцієнтів
+     */
     public static double[][] computeMatrix(int n) {
         double[][] coefficients = new double[n + 1][n + 1];
         Arrays.stream(coefficients).forEach(row -> Arrays.fill(row, 0));
@@ -1034,6 +1192,9 @@ public class Controller implements Initializable {
         return coefficients;
     }
 
+    /**
+     * Функція обчислення матриці T
+     */
     public static double[] computeTMatrix(double t, int n) {
         double[] tMatrix = new double[n + 1];
         for (int i = 0; i < tMatrix.length; i++) {
@@ -1043,6 +1204,9 @@ public class Controller implements Initializable {
         return tMatrix;
     }
 
+    /**
+     * Функція виведення матриці коефіцієнтів у консоль
+     */
     public static void printMatrix(double[][] matrix) {
         for (double[] row : matrix) {
             for (double element : row) {
@@ -1052,6 +1216,9 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Функція виведення матриці коефіцієнтів на вікно
+     */
     public void setMatrixLabel(double[][] matrix) {
         String str = "";
         double diagonal1 = 0;
