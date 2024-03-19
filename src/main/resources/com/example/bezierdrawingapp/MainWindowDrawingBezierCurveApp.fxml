@@ -36,7 +36,7 @@
                   </Label>
                </children>
             </Group>
-            <Group fx:id="newPointCoordGroup" layoutX="21.0" layoutY="170.0">
+            <Group fx:id="newPointCoordGroup" layoutX="21.0" layoutY="196.0">
                <children>
             <Label prefHeight="27.0" prefWidth="177.0" text="Coordinates of next point" textFill="WHITE">
               <font>
@@ -104,7 +104,7 @@
                   </Label>
                </children>
             </Group>
-            <Group fx:id="deletePointCoordGroup" layoutX="21.0" layoutY="222.0">
+            <Group fx:id="deletePointCoordGroup" layoutX="22.0" layoutY="234.0">
                <children>
                   <Label layoutY="-12.0" prefHeight="52.0" prefWidth="177.0" text="Coordinates of point to &#10;delete" textFill="WHITE">
                      <font>
@@ -133,7 +133,7 @@
                         <Font size="11.0" />
                      </font>
                   </Label>
-                  <Label layoutY="27.0" prefHeight="52.0" prefWidth="171.0" text="Number of point to delete" textFill="WHITE">
+                  <Label layoutY="27.0" prefHeight="52.0" prefWidth="171.0" text="Index of point to delete" textFill="WHITE">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -142,7 +142,7 @@
                   <Button fx:id="deleteNumberButton" layoutX="260.0" layoutY="42.0" mnemonicParsing="false" onAction="#onDeleteNumberButtonClick" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #ff9a63; -fx-background-radius: 6;" text="Delete" />
                </children>
             </Group>
-            <Group fx:id="inputStepGroup" layoutX="35.0" layoutY="102.0">
+            <Group fx:id="inputStepGroup" layoutX="37.0" layoutY="95.0">
                <children>
                   <Label prefHeight="55.0" prefWidth="43.0" text="Input" textFill="WHITE">
                      <font>
@@ -268,6 +268,31 @@
           <Font size="14.0" />
         </font>
       </Button>
+            <Group fx:id="fileReadGroup" layoutX="21.0" layoutY="157.0">
+               <children>
+                  <Label prefHeight="27.0" prefWidth="177.0" text="Read points from file" textFill="WHITE">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Group layoutX="152.0" layoutY="-6.0">
+                     <children>
+                        <Label layoutX="8.0" layoutY="6.0" prefHeight="27.0" prefWidth="95.0" text="num of points:" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="readPointsTf" layoutX="103.0" layoutY="7.0" prefHeight="25.0" prefWidth="47.0" />
+                     </children>
+                  </Group>
+                  <Button fx:id="readButton" layoutX="321.0" layoutY="1.0" mnemonicParsing="false" onAction="#onReadButtonClick" prefHeight="27.0" prefWidth="70.0" style="-fx-background-color: #bababa; -fx-background-radius: 6;" text="Read" />
+                  <Label fx:id="readLabelWarning" layoutX="1.0" layoutY="22.0" prefHeight="16.0" prefWidth="381.0" text="*dfdfsdfsdf" textFill="#ff8181">
+                     <font>
+                        <Font size="11.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Group>
     </children></AnchorPane>
   <AnchorPane fx:id="GraphPane" layoutX="466.0" layoutY="12.0" prefHeight="715.0" prefWidth="715.0" style="-fx-background-color: #404040; -fx-background-radius: 10px;">
     <children>

@@ -16,7 +16,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.Group;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -43,7 +49,7 @@ public class Controller implements Initializable {
     /**
      * Максимальна кількість точок побудови кривої матричним методом
      */
-    private final int MAX_MATRIX_POINTS_NUMBER = 31;
+    private final int MAX_MATRIX_POINTS_NUMBER = 30;
 
     /**
      * Максимальна кількість точок побудови кривої параметричним методом
@@ -69,6 +75,8 @@ public class Controller implements Initializable {
     @FXML
     private Label editLabelWarning;
     @FXML
+    private Label readLabelWarning;
+    @FXML
     private Pane Graph;
     @FXML
     private ChoiceBox<String> methodList;
@@ -81,6 +89,10 @@ public class Controller implements Initializable {
     private TextField bTf;
     @FXML
     private TextField stepTf;
+
+    //
+    @FXML
+    private TextField readPointsTf;
 
     //
     @FXML
@@ -125,6 +137,8 @@ public class Controller implements Initializable {
     //Groups
     @FXML
     private Group inputStepGroup;
+    @FXML
+    private Group fileReadGroup;
     @FXML
     private Group newPointCoordGroup;
     @FXML
@@ -187,6 +201,7 @@ public class Controller implements Initializable {
         addLabelWarning.setText("");
         deleteLabelWarning.setText("");
         tLabelWarning.setText("");
+        readLabelWarning.setText("");
 
         methodList.getItems().addAll(methodsStr);
 
@@ -210,6 +225,7 @@ public class Controller implements Initializable {
         diagonalPointListGroup.setVisible(false);
         diagonalSumGroup.setVisible(false);
         editPointGroup.setVisible(false);
+        fileReadGroup.setVisible(false);
     }
 
     /**
@@ -305,6 +321,7 @@ public class Controller implements Initializable {
             colorChooseGroup.setVisible(true);
             deletePointCoordGroup.setVisible(true);
             editPointGroup.setVisible(true);
+            fileReadGroup.setVisible(true);
         } else if (Objects.equals(methodList.getValue(), "Matrix")) {
             clearPane();
             //
@@ -320,6 +337,7 @@ public class Controller implements Initializable {
             deletePointCoordGroup.setVisible(true);
             diagonalPointListGroup.setVisible(true);
             editPointGroup.setVisible(true);
+            fileReadGroup.setVisible(true);
         }
     }
 
@@ -375,6 +393,100 @@ public class Controller implements Initializable {
         step=-1;
         a=-1;
         b=-1;
+    }
+
+    @FXML
+    void onReadButtonClick(ActionEvent event) {
+        if (!isStepValuesCorrect()) {
+            showAlert("Warning", "Input step and interval");
+            return;
+        }
+        if(!isReadNumberFieldsCorrectFilled()) {
+            return;
+        }
+        int length = Integer.parseInt(readPointsTf.getText());
+        readLabelWarning.setText("");
+        readPointsTf.clear();
+        readingFile(length);
+    }
+
+    /**
+     * Функція-перевірка на коректні значення номера точки для видалення
+     */
+    public boolean isReadNumberFieldsCorrectFilled() {
+        if (readPointsTf.getText().isEmpty()) {
+            readLabelWarning.setText("*Field empty");
+            return false;
+        }
+        try {
+            int nTemp = Integer.parseInt(readPointsTf.getText());
+            if (pointList.size()+nTemp<=MAX_POINTS && nTemp>0) {
+                return true;
+            }
+            readLabelWarning.setText("*The value is outside the allowed points");
+            return false;
+        } catch (NumberFormatException e) {
+            readLabelWarning.setText("*Incorrect input");
+            return false;
+        }
+    }
+
+    /**
+     * Функція зчитування інформації з файлу
+     */
+    public void readingFile(int length) {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Choose reading file");
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter
+                    ("TXT files (*.txt)", "*.txt");
+            fileChooser.getExtensionFilters().add(extFilter);
+            File selectedFile = fileChooser.showOpenDialog(new Stage());
+            String readFilePath = selectedFile.getAbsolutePath();
+            readingFromFile(readFilePath, length);
+            scalingToUserValue(pointList, circleList);
+            if (!pointList.isEmpty()) {
+                System.out.println("Finish reading");
+            } else {
+                showAlert("Reading Error", "Incorrect position of fields or empty file");
+                System.out.println("Unsuccessful reading");
+            }
+            updateGraph();
+        } catch (NullPointerException e) {
+            System.out.println("Unsuccessful reading: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Функція зчитування списку точок
+     */
+    public void readingFromFile(String readFilePath, int length) {
+        File readFile = new File(readFilePath);
+        try (BufferedReader br = new BufferedReader(new FileReader(readFile))) {
+            String line;
+            int temp = 0;
+            while ((line = br.readLine()) != null && temp<length) {
+                try {
+                    String[] parts = line.split(", ");
+                    double x = Double.parseDouble(parts[0].substring(2));
+                    double y = Double.parseDouble(parts[1].substring(2));
+
+                    Point point = new Point(x, y, 1);
+                    point.calculationGraphicsCoord(Graph, LINES_FREQUENCY);
+                    Circle pointCircle = new Circle(point.getxGraph(), point.getyGraph(), CIRCLE_RADIUS, pointColor);
+                    pointList.add(point);
+                    circleList.add(pointCircle);
+                    temp++;
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+            if (temp<length) {
+                readLabelWarning.setText("*File contain only " + temp + " elements");
+            }
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
     }
 
     /**
@@ -565,7 +677,6 @@ public class Controller implements Initializable {
         circleList.remove(n-1);
         updateGraph();
         pnDeleteTf.clear();
-        pxDeleteTf.clear();
     }
 
     /**
@@ -1227,7 +1338,7 @@ public class Controller implements Initializable {
         String diagonal2SumStr = "";
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j<matrix.length-i; j++) {
-                str+= matrix[i][j]+ "  ";
+                str+= ((double) Math.round(matrix[i][j] * 100) /100 )+ "  ";
 
                 if (i==j) {
                     diagonal1SumStr += matrix[i][j]+" + ";
